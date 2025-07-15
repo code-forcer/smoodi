@@ -76,8 +76,8 @@ Total: $${totalAmount.toLocaleString("en-US")}
 `;
 
   const mailOptions = {
-    from: 'codeforcerdev@gmail.com',
-    to: 'codeforcerdev@gmail.com',
+    from: 'niran@getsmoodi.com',
+    to: 'niran@getsmoodi.com',
     subject: 'Smoodi: Additional information form was filled!',
     text: textContent,
     html: htmlContent
