@@ -5,11 +5,10 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Setup email transport
+// Email transport
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -18,12 +17,12 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-// Simple responsive email template
+// Dollar-based email template
 function generateEmailTemplate(business_name, business_address, cart_items) {
   const itemsHTML = cart_items.map(item => `
     <tr>
       <td style="padding: 10px; border-bottom: 1px solid #ccc;">
-        <strong>${item.title}</strong> (x${item.quantity}) - ₦${(item.price * item.quantity).toLocaleString()}
+        <strong>${item.title}</strong> (x${item.quantity}) - $${(item.price * item.quantity).toLocaleString("en-US")}
       </td>
     </tr>
   `).join('');
@@ -49,9 +48,9 @@ function generateEmailTemplate(business_name, business_address, cart_items) {
           ${itemsHTML}
         </table>
         <hr />
-        <h3>Total: ₦${totalAmount.toLocaleString()}</h3>
+        <h3>Total: $${totalAmount.toLocaleString("en-US")}</h3>
         <p style="margin-top: 20px; font-size: 14px; color: #666;">
-          This is not an order confirmation. It’s a site notification that someone entered their details.
+          Additional Info: This is not an order confirmation. It’s a site notification that someone entered their details.
         </p>
       </div>
     </body>
@@ -59,11 +58,11 @@ function generateEmailTemplate(business_name, business_address, cart_items) {
   `;
 }
 
-// Route
 app.post('/submit-cart', (req, res) => {
   const { business_name, business_address, cart_items } = req.body;
 
   const htmlContent = generateEmailTemplate(business_name, business_address, cart_items);
+  const totalAmount = cart_items.reduce((sum, i) => sum + (i.price * i.quantity), 0);
   const textContent = `
 New Checkout Info Submission 🛒
 
@@ -71,15 +70,15 @@ Business Name: ${business_name}
 Address: ${business_address}
 
 Items:
-${cart_items.map(i => `- ${i.title} (x${i.quantity}) - ₦${i.price}`).join('\n')}
+${cart_items.map(i => `- ${i.title} (x${i.quantity}) - $${i.price}`).join('\n')}
 
-Total: ₦${cart_items.reduce((sum, i) => sum + (i.price * i.quantity), 0).toLocaleString()}
+Total: $${totalAmount.toLocaleString("en-US")}
 `;
 
   const mailOptions = {
     from: 'codeforcerdev@gmail.com',
     to: 'codeforcerdev@gmail.com',
-    subject: 'Smoodi: Someone is interested (Not an Order)',
+    subject: 'Smoodi: Additional information form was filled!',
     text: textContent,
     html: htmlContent
   };
